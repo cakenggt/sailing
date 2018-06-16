@@ -28,6 +28,55 @@ local function get_v(v)
 	return math.sqrt(v.x ^ 2 + v.z ^ 2)
 end
 
+local function mult_vec(vec, m)
+	return {x = vec.x * m, z = vec.z * m}
+end
+
+local function normalize_vec(vec)
+	local mag = math.sqrt(vec.x ^ 2 + vec.z ^ 2)
+	return mult_vec(vec, 1 / mag)
+end
+
+local function yaw_to_vec(yaw)
+	return normalize_vec({x = -math.sin(yaw), z = math.cos(yaw)})
+end
+
+local function dot_product(vec1, vec2)
+	return (vec1.x * vec2.x) + (vec1.z * vec2.z)
+end
+
+-- wind follows clouds
+local wind = {x = 0, z = -1}
+
+local sail_attach_pos = {x = 0, y = 11, z = 2}
+
+local function calculate_wind(boat)
+	if boat.sail then
+		local total_sail_yaw = boat.sail_yaw + boat.object:getyaw()
+		local first_dot = dot_product(normalize_vec(wind), yaw_to_vec(total_sail_yaw))
+		local second_dot = dot_product(
+			yaw_to_vec(total_sail_yaw),
+			yaw_to_vec(boat.object:getyaw())
+		)
+		local total_mult = first_dot * second_dot
+		if boat.driver then
+			local ctrl = boat.driver:get_player_control()
+			if ctrl.sneak then
+				--minetest.log('error', "sail_yaw "..boat.sail_yaw)
+				--minetest.log('error', "sail_vec"..minetest.write_json(yaw_to_vec(boat.sail_yaw)))
+				--minetest.log('error', "first_dot "..first_dot)
+				--minetest.log('error', "second_dot "..second_dot)
+				--minetest.log('error', "total_sail_yaw "..total_sail_yaw)
+				--minetest.log('error', "total_sail_vec "..minetest.write_json(yaw_to_vec(total_sail_yaw)))
+				--minetest.log('error', "total mult "..total_mult)
+			end
+		end
+		return total_mult
+	else
+		return 0
+	end
+end
+
 --
 -- Boat entity
 --
@@ -46,7 +95,8 @@ local boat = {
 	last_v = 0,
 	removed = false,
 	sail = nil,
-	sail_yaw = 0
+	sail_yaw = 0,
+	last_sail_mod = 0
 }
 
 local sail = {
@@ -92,12 +142,6 @@ function boat.on_rightclick(self, clicker)
 			default.player_set_animation(clicker, "sit" , 30)
 		end)
 		clicker:set_look_horizontal(self.object:getyaw())
-		sail = minetest.add_entity(self.object:getpos(), "sailing:sail")
-		if sail then
-			sail:set_attach(self.object, "",
-				{x = 0, y = 11, z = -3}, {x = 0, y = self.sail_yaw, z = 0})
-			self.sail = sail
-		end
 	end
 end
 
@@ -140,11 +184,29 @@ function boat.on_punch(self, puncher)
 		-- delay remove to ensure player is detached
 		minetest.after(0.1, function()
 			self.object:remove()
-			if self.sail then
-				self.sail:remove()
-			end
 		end)
 	end
+end
+
+
+function boat.toggle_sail(self)
+	if self.sail then
+		self.sail:remove()
+		self.sail = nil
+	else
+		self:update_sail()
+	end
+end
+
+
+function boat.update_sail(self)
+	local sail = self.sail
+	if not sail then
+		sail = minetest.add_entity(self.object:getpos(), "sailing:sail")
+		self.sail = sail
+	end
+	sail:set_attach(self.object, "",
+		sail_attach_pos, {x = 0, y = -math.deg(self.sail_yaw), z = 0})
 end
 
 
@@ -153,6 +215,10 @@ function boat.on_step(self, dtime)
 	if self.driver then
 		local ctrl = self.driver:get_player_control()
 		local yaw = self.object:getyaw()
+		if ctrl.jump and minetest.get_gametime() ~= self.last_sail_mod then
+			self.last_sail_mod = minetest.get_gametime()
+			self:toggle_sail()
+		end
 		if ctrl.up then
 			self.v = self.v + 0.1
 		elseif ctrl.down then
@@ -161,35 +227,23 @@ function boat.on_step(self, dtime)
 		if ctrl.sneak then
 			if self.sail then
 				if ctrl.left then
-					self.sail_yaw = self.sail_yaw - (1 + dtime) * 3
+					self.sail_yaw = self.sail_yaw + (1 + dtime) * 0.03
 				elseif ctrl.right then
-					self.sail_yaw = self.sail_yaw + (1 + dtime) * 3
+					self.sail_yaw = self.sail_yaw - (1 + dtime) * 0.03
 				end
-				minetest.log('error', self.sail_yaw)
-				self.sail:set_attach(self.object, "",
-					{x = 0, y = 11, z = -3}, {x = 0, y = self.sail_yaw, z = 0})
+				self:update_sail()
 			end
 		else
 			if ctrl.left then
-				if self.v < 0 then
-					self.object:setyaw(yaw - (1 + dtime) * 0.03)
-				else
-					self.object:setyaw(yaw + (1 + dtime) * 0.03)
-				end
+				self.object:setyaw(yaw + (1 + dtime) * 0.03)
 			elseif ctrl.right then
-				if self.v < 0 then
-					self.object:setyaw(yaw + (1 + dtime) * 0.03)
-				else
-					self.object:setyaw(yaw - (1 + dtime) * 0.03)
-				end
+				self.object:setyaw(yaw - (1 + dtime) * 0.03)
 			end
 		end
 	end
 	local velo = self.object:getvelocity()
-	if self.v == 0 and velo.x == 0 and velo.y == 0 and velo.z == 0 then
-		self.object:setpos(self.object:getpos())
-		return
-	end
+	local wind_v = calculate_wind(self)
+	self.v = self.v + wind_v
 	local s = get_sign(self.v)
 	self.v = self.v - 0.02 * s
 	if s ~= get_sign(self.v) then
@@ -227,7 +281,7 @@ function boat.on_step(self, dtime)
 			else
 				new_acce = {x = 0, y = 5, z = 0}
 			end
-			new_velo = get_velocity(self.v, self.object:getyaw(), y)
+			new_velo = get_velocity(self.v + wind_v, self.object:getyaw(), y)
 			self.object:setpos(self.object:getpos())
 		else
 			new_acce = {x = 0, y = 0, z = 0}
