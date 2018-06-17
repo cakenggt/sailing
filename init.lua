@@ -48,10 +48,12 @@ end
 -- wind follows clouds
 local wind = {x = 0, z = -1}
 
-local sail_attach_pos = {x = 0, y = 11, z = 2}
+local sail_attach_pos = {x = 0.5, y = 5, z = 17}
 
 local function calculate_wind(boat)
-	if boat.sail then
+	-- DEBUG
+	-- if boat.sail then
+	if boat.sail and boat.driver then
 		local total_sail_yaw = boat.sail_yaw + boat.object:getyaw()
 		local first_dot = dot_product(normalize_vec(wind), yaw_to_vec(total_sail_yaw))
 		local second_dot = dot_product(
@@ -115,9 +117,10 @@ function boat.on_rightclick(self, clicker)
 	if self.driver and clicker == self.driver then
 		self.driver = nil
 		clicker:set_detach()
-		if self.sail then
-			self.sail:remove()
-		end
+		-- DEBUG
+		--if self.sail then
+		--	self.sail:remove()
+		--end
 		default.player_attached[name] = false
 		default.player_set_animation(clicker, "stand" , 30)
 		local pos = clicker:getpos()
