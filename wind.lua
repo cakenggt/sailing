@@ -4,56 +4,52 @@ end
 
 local function generate_next_wind()
   return {
-    x = generate_offset(30),
-    z = generate_offset(30)
+    yaw = math.random() * 2 * math.pi,
+    mag = math.random() * 15
   }
 end
 
 wind = generate_next_wind()
 
-local wind_interval = 120
+local wind_interval = 60 * 20
+local wind_counter = 0
+local wind_change_factor = 4
 local prev_wind = wind
 local next_wind = generate_next_wind()
 
 local function modify_wind()
-  local current_time = minetest.get_gametime()
-  if current_time then
-    if not next_wind_time then
-      next_wind_time = current_time + wind_interval
-    end
-    if next_wind_time <= current_time then
-      prev_wind = next_wind
-      next_wind = generate_next_wind()
-      next_wind_time = current_time + wind_interval
-    end
-    local progress = (current_time - (next_wind_time - wind_interval)) / wind_interval
-    wind = {
-      x = prev_wind.x + ((next_wind.x - prev_wind.x) * progress),
-      z = prev_wind.z + ((next_wind.z - prev_wind.z) * progress)
-    }
-    minetest.log('error', "wind "..minetest.write_json(wind))
-    minetest.log('error', "progress "..progress)
-    minetest.log('error', "next wind "..minetest.write_json(next_wind))
+  if wind_counter > wind_interval then
+    prev_wind = next_wind
+    next_wind = generate_next_wind()
+    wind_counter = 0
   end
+  wind = {
+    yaw = wind.yaw + ((next_wind.yaw - wind.yaw) / wind_change_factor),
+    mag = wind.mag + ((next_wind.mag - wind.mag) / wind_change_factor)
+  }
+  --minetest.log('error', "wind "..minetest.write_json(wind))
+  --minetest.log('error', "next wind "..minetest.write_json(next_wind))
+  wind_counter = wind_counter + 1
   minetest.after(1, modify_wind)
 end
 
 modify_wind()
 
-function show_wind(pos, rand, player)
+function show_wind(pos, rand, player_name)
   if math.random() < rand then
     local random_pos = {
       x = pos.x + generate_offset(5),
       y = pos.y + generate_offset(5),
       z = pos.z + generate_offset(5)
     }
+    local wind_vec = wind_to_vec()
     minetest.add_particle({
           pos = random_pos,
-          velocity = {x=wind.x, y=0, z=wind.z},
+          velocity = {x=wind_vec.x, y=0, z=wind_vec.z},
           expirationtime = 3,
           size = 1,
           texture = "wind.png",
-          playername = player,
+          playername = player_name,
           glow = 5
       })
     end

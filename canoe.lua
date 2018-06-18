@@ -28,53 +28,7 @@ local function get_v(v)
 	return math.sqrt(v.x ^ 2 + v.z ^ 2)
 end
 
-local function mult_vec(vec, m)
-	return {x = vec.x * m, z = vec.z * m}
-end
-
-local function normalize_vec(vec)
-	local mag = math.sqrt(vec.x ^ 2 + vec.z ^ 2)
-	return mult_vec(vec, 1 / mag)
-end
-
-local function yaw_to_vec(yaw)
-	return normalize_vec({x = -math.sin(yaw), z = math.cos(yaw)})
-end
-
-local function dot_product(vec1, vec2)
-	return (vec1.x * vec2.x) + (vec1.z * vec2.z)
-end
-
 local sail_attach_pos = {x = 0.5, y = 5, z = 17}
-
-local function calculate_wind(boat)
-	if boat.sail then
-		local total_sail_yaw = boat.sail_yaw + boat.object:getyaw()
-		local first_dot = dot_product(wind, yaw_to_vec(total_sail_yaw))
-		local second_dot = dot_product(
-			yaw_to_vec(total_sail_yaw),
-			yaw_to_vec(boat.object:getyaw())
-		)
-		local total_mult = first_dot * second_dot
-		if boat.driver then
-			local ctrl = boat.driver:get_player_control()
-			if ctrl.sneak then
-				--minetest.log('error', "normalize wind "..minetest.write_json(normalize_vec(wind)))
-				--minetest.log('error', "yaw vec "..minetest.write_json(yaw_to_vec(total_sail_yaw)))
-				--minetest.log('error', "sail_yaw "..boat.sail_yaw)
-				--minetest.log('error', "sail_vec"..minetest.write_json(yaw_to_vec(boat.sail_yaw)))
-				--minetest.log('error', "first_dot "..first_dot)
-				--minetest.log('error', "second_dot "..second_dot)
-				--minetest.log('error', "total_sail_yaw "..total_sail_yaw)
-				--minetest.log('error', "total_sail_vec "..minetest.write_json(yaw_to_vec(total_sail_yaw)))
-				--minetest.log('error', "total mult "..total_mult)
-			end
-		end
-		return total_mult
-	else
-		return 0
-	end
-end
 
 --
 -- Boat entity
@@ -209,7 +163,7 @@ end
 function boat.on_step(self, dtime)
 	local wind_v = calculate_wind(self)
 	if self.driver then
-		show_wind(self.object:getpos(), 0.1, self.driver:get_player_name())
+		show_wind(self.driver:get_pos(), 0.1, self.driver:get_player_name())
 		local ctrl = self.driver:get_player_control()
 		local yaw = self.object:getyaw()
 		if ctrl.jump and minetest.get_gametime() ~= self.last_sail_mod then
