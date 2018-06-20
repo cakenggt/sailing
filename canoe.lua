@@ -49,7 +49,7 @@ local boat = {
 	removed = false,
 	sail = nil,
 	sail_yaw = 0,
-	last_sail_mod = 0
+	jumping = false
 }
 
 local sail = {
@@ -166,13 +166,15 @@ function boat.on_step(self, dtime)
 		show_wind(self.driver:get_pos(), 0.1, self.driver:get_player_name())
 		local ctrl = self.driver:get_player_control()
 		local yaw = self.object:getyaw()
-		if ctrl.jump and minetest.get_gametime() ~= self.last_sail_mod then
-			self.last_sail_mod = minetest.get_gametime()
+		if ctrl.jump and not self.jumping then
+			self.jumping = true
 			if self.sail then
 				-- slow down slowly after removing sail
 				self.v = self.v + wind_v
 			end
 			self:toggle_sail()
+		elseif not ctrl.jump and self.jumping then
+			self.jumping = false
 		end
 		if not self.sail then
 			if ctrl.up then
