@@ -19,6 +19,10 @@ minetest.register_on_mapgen_init(function(mgparams)
   minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
 end)
 
+minetest.clear_registered_decorations()
+minetest.clear_registered_biomes()
+minetest.clear_registered_schematics()
+
 -- between 0 and 1
 local np_atoll = {
   offset = 0.5,
@@ -58,10 +62,12 @@ minetest.register_on_generated(function(minp, maxp, seed)
   local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
   local data = vm:get_data()
 
-  local c_water    = minetest.get_content_id("default:water_source")
-  local c_lava     = minetest.get_content_id("default:lava_source")
-  local c_grass    = minetest.get_content_id("default:dirt_with_grass")
-  local c_dirt     = minetest.get_content_id("default:dirt")
+  local c_water = minetest.get_content_id("default:water_source")
+  local c_lava = minetest.get_content_id("default:lava_source")
+  local c_grass = minetest.get_content_id("default:dirt_with_grass")
+  local c_dirt = minetest.get_content_id("default:dirt")
+  local c_sand = minetest.get_content_id("default:sand")
+  local c_stone = minetest.get_content_id("default:stone")
 
   local sidelen = x1 - x0 + 1
   local chulens2d = {x=sidelen, y=sidelen, z=1}
@@ -86,14 +92,43 @@ minetest.register_on_generated(function(minp, maxp, seed)
       end
 
       for y = y0, y1 do
-        local vi = area:index(x, y, z)
+        local block_type = nil
         -- land
         if y < solid_level then
-        --if y < Y_WATER then
-          data[vi] = c_dirt
+          if y >= Y_WATER then
+            -- is not underwater
+            if math.abs(y - Y_WATER) < 3 and math.abs(solid_level - Y_WATER) < 3 then
+              block_type = c_sand
+            elseif (y + 1) >= solid_level then
+              -- very top solid block
+              block_type = c_grass
+            elseif atoll_factor > 0 then
+              -- stone only spawns in atolls
+              block_type = c_stone
+            else
+              block_type = c_dirt
+            end
+          else
+            -- is underwater
+            if atoll_factor > 0 then
+              -- stone only spawns in atolls
+              if (y + 1) >= solid_level then
+                -- very top solid block
+                block_type = c_sand
+              else
+                block_type = c_stone
+              end
+            else
+              block_type = c_sand
+            end
+          end
         elseif y < Y_WATER then
           --water
-          data[vi] = c_water
+          block_type = c_water
+        end
+        if block_type then
+          local vi = area:index(x, y, z)
+          data[vi] = block_type
         end
       end
       n_index = n_index + 1
@@ -101,6 +136,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
   end
 
   vm:set_data(data)
+  minetest.generate_ores(vm)
+  minetest.generate_decorations(vm)
   vm:calc_lighting()
   vm:write_to_map(data)
   vm:update_liquids()
