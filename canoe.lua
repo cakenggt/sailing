@@ -45,7 +45,6 @@ local boat = {
 
 	driver = nil,
 	v = 0,
-	last_v = 0,
 	removed = false,
 	sail = nil,
 	sail_yaw = 0,
@@ -101,7 +100,6 @@ function boat.on_activate(self, staticdata, dtime_s)
 	if staticdata then
 		self.v = tonumber(staticdata)
 	end
-	self.last_v = self.v
 end
 
 
@@ -303,6 +301,13 @@ minetest.register_craftitem("sailing:boat", {
 		return itemstack
 	end,
 })
+
+function sail.on_activate(self, staticdata, dtime_s)
+	if dtime_s > 0 then
+		-- remove sail if the boat was ever unloaded
+		self.object:remove()
+	end
+end
 
 
 minetest.register_craft({
