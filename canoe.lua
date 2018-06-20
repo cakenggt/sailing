@@ -34,13 +34,13 @@ local sail_attach_pos = {x = 0.5, y = 5, z = 17}
 -- Boat entity
 --
 
-local boat = {
+local canoe = {
 	physical = true,
 	-- Warning: Do not change the position of the collisionbox top surface,
 	-- lowering it causes the boat to fall through the world if underwater
 	collisionbox = {-0.5, -0.35, -0.5, 0.5, 0.3, 0.5},
 	visual = "mesh",
-	mesh = "sailing_boat.obj",
+	mesh = "sailing_canoe.obj",
 	textures = {"default_wood.png"},
 
 	driver = nil,
@@ -59,7 +59,7 @@ local sail = {
 }
 
 
-function boat.on_rightclick(self, clicker)
+function canoe.on_rightclick(self, clicker)
 	if not clicker or not clicker:is_player() then
 		return
 	end
@@ -95,7 +95,7 @@ function boat.on_rightclick(self, clicker)
 end
 
 
-function boat.on_activate(self, staticdata, dtime_s)
+function canoe.on_activate(self, staticdata, dtime_s)
 	self.object:set_armor_groups({immortal = 1})
 	if staticdata then
 		self.v = tonumber(staticdata)
@@ -103,12 +103,12 @@ function boat.on_activate(self, staticdata, dtime_s)
 end
 
 
-function boat.get_staticdata(self)
+function canoe.get_staticdata(self)
 	return tostring(self.v)
 end
 
 
-function boat.on_punch(self, puncher)
+function canoe.on_punch(self, puncher)
 	if not puncher or not puncher:is_player() or self.removed then
 		return
 	end
@@ -122,8 +122,8 @@ function boat.on_punch(self, puncher)
 		local inv = puncher:get_inventory()
 		if not (creative and creative.is_enabled_for
 				and creative.is_enabled_for(puncher:get_player_name()))
-				or not inv:contains_item("main", "sailing:boat") then
-			local leftover = inv:add_item("main", "sailing:boat")
+				or not inv:contains_item("main", "sailing:canoe") then
+			local leftover = inv:add_item("main", "sailing:canoe")
 			-- if no room in inventory add a replacement boat to the world
 			if not leftover:is_empty() then
 				minetest.add_item(self.object:getpos(), leftover)
@@ -137,7 +137,7 @@ function boat.on_punch(self, puncher)
 end
 
 
-function boat.toggle_sail(self)
+function canoe.toggle_sail(self)
 	if self.sail then
 		self.sail:remove()
 		self.sail = nil
@@ -147,7 +147,7 @@ function boat.toggle_sail(self)
 end
 
 
-function boat.update_sail(self)
+function canoe.update_sail(self)
 	local sail = self.sail
 	if not sail then
 		sail = minetest.add_entity(self.object:getpos(), "sailing:sail")
@@ -158,7 +158,7 @@ function boat.update_sail(self)
 end
 
 
-function boat.on_step(self, dtime)
+function canoe.on_step(self, dtime)
 	local wind_v = calculate_wind(self)
 	if self.driver then
 		show_wind(self.driver:get_pos(), 0.1, self.driver:get_player_name())
@@ -257,14 +257,14 @@ function boat.on_step(self, dtime)
 end
 
 
-minetest.register_entity("sailing:boat", boat)
+minetest.register_entity("sailing:canoe", canoe)
 minetest.register_entity("sailing:sail", sail)
 
 
-minetest.register_craftitem("sailing:boat", {
+minetest.register_craftitem("sailing:canoe", {
 	description = "Canoe",
-	inventory_image = "boats_inventory.png",
-	wield_image = "boats_wield.png",
+	inventory_image = "canoe_inventory.png",
+	wield_image = "canoe_wield.png",
 	wield_scale = {x = 2, y = 2, z = 1},
 	liquids_pointable = true,
 	groups = {flammable = 2},
@@ -287,10 +287,10 @@ minetest.register_craftitem("sailing:boat", {
 			return itemstack
 		end
 		pointed_thing.under.y = pointed_thing.under.y + 0.5
-		boat = minetest.add_entity(pointed_thing.under, "sailing:boat")
-		if boat then
+		canoe = minetest.add_entity(pointed_thing.under, "sailing:canoe")
+		if canoe then
 			if placer then
-				boat:setyaw(placer:get_look_horizontal())
+				canoe:setyaw(placer:get_look_horizontal())
 			end
 			local player_name = placer and placer:get_player_name() or ""
 			if not (creative and creative.is_enabled_for and
@@ -311,7 +311,7 @@ end
 
 
 minetest.register_craft({
-	output = "sailing:boat",
+	output = "sailing:canoe",
 	recipe = {
 		{"wool:white", "wool:white", "wool:white"},
 		{"group:wood", "",           "group:wood"},
@@ -321,6 +321,6 @@ minetest.register_craft({
 
 minetest.register_craft({
 	type = "fuel",
-	recipe = "sailing:boat",
+	recipe = "sailing:canoe",
 	burntime = 20,
 })

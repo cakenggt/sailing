@@ -35,8 +35,8 @@ end
 
 minetest.register_craftitem("sailing:weathervane", {
 	description = "Weathervane",
-	inventory_image = "boats_inventory.png",
-	wield_image = "boats_wield.png",
+	inventory_image = "weathervane_inventory.png",
+	wield_image = "weathervane_inventory.png",
 	wield_scale = {x = 2, y = 2, z = 1},
 	liquids_pointable = false,
 	groups = {flammable = 2},
