@@ -78,28 +78,22 @@ minetest.register_on_generated(function(minp, maxp, seed)
     for x = x0, x1 do
       local n_atoll = nvals_atoll[n_index]
       local n_island = nvals_island[n_index]
+      local atoll_factor = get_atoll_factor(n_atoll)
+      local solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))
+      -- central island
+      if x < BIG_ISLAND and x > -BIG_ISLAND and z < BIG_ISLAND and z > -BIG_ISLAND then
+        solid_level = (n_island * LAND_MAX / 2) * (0.5 - math.abs((math.sqrt(x ^ 2 + z ^ 2) / BIG_ISLAND) - 0.5))
+      end
+
       for y = y0, y1 do
         local vi = area:index(x, y, z)
-        local atoll_factor = get_atoll_factor(n_atoll)
-        -- central island
-        if x < BIG_ISLAND and x > -BIG_ISLAND and z < BIG_ISLAND and z > -BIG_ISLAND then
-          atoll_factor = 0.5 - math.abs((math.sqrt(x ^ 2 + z ^ 2) / BIG_ISLAND) - 0.5)
-          if y < (atoll_factor * 50 * n_island) then
-          --if y < Y_WATER then
-            data[vi] = c_dirt
-          elseif y < Y_WATER then
-            --water
-            data[vi] = c_water
-          end
-        else
-          -- land
-          if y < ((n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))) then
-          --if y < Y_WATER then
-            data[vi] = c_dirt
-          elseif y < Y_WATER then
-            --water
-            data[vi] = c_water
-          end
+        -- land
+        if y < solid_level then
+        --if y < Y_WATER then
+          data[vi] = c_dirt
+        elseif y < Y_WATER then
+          --water
+          data[vi] = c_water
         end
       end
       n_index = n_index + 1
