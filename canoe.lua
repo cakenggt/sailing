@@ -313,7 +313,7 @@ end
 minetest.register_craft({
 	output = "sailing:canoe",
 	recipe = {
-		{"wool:white", "wool:white", "wool:white"},
+		{"group:wool", "group:wool", "group:wool"},
 		{"group:wood", "",           "group:wood"},
 		{"group:wood", "group:wood", "group:wood"},
 	},

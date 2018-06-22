@@ -11,7 +11,7 @@ minetest.register_node("sailing:palm_trunk", {
 	is_ground_content = false,
 	groups = {tree = 1, choppy = 2, oddly_breakable_by_hand = 1, flammable = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_rightclick = (function(pos)
+	on_rightclick = function(pos)
 		local node = minetest.get_node(pos)
 		while node.name == "sailing:palm_trunk" do
 			pos.y = pos.y + 1
@@ -28,7 +28,7 @@ minetest.register_node("sailing:palm_trunk", {
 				return
 			end
 		end
-	end),
+	end,
 })
 
 minetest.register_node("sailing:coconut_spawn", {
@@ -37,7 +37,7 @@ minetest.register_node("sailing:coconut_spawn", {
 	is_ground_content = false,
 	groups = {tree = 1, choppy = 2, oddly_breakable_by_hand = 1, flammable = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_timer = (function(pos, elapsed)
+	on_timer = function(pos, elapsed)
 		-- Spawn a coconut on one of the four sides randomly
 		local index = math.ceil(math.random() * 4)
 		local side = sides[index]
@@ -46,8 +46,8 @@ minetest.register_node("sailing:coconut_spawn", {
 			minetest.set_node(newpos, {name = "sailing:coconut_block"})
 			return
 		end
-		minetest.get_node_timer(pos).start()
-	end),
+		minetest.get_node_timer(pos).start(30)
+	end,
 	drop = "sailing:palm_trunk",
 })
 
@@ -66,7 +66,19 @@ minetest.register_node("sailing:coconut_block", {
 	tiles = {"sailing_coconut_spawn.png"},
 	is_ground_content = false,
 	groups = {tree = 1, choppy = 2, flammable = 2},
-	drop = "sailing:coconut_meat",
+	drop = {
+    max_items = 3,
+    items = {
+      {
+        items = {"sailing:coconut_meat"},
+        rarity = 1,
+      },
+			{
+        items = {"sailing:coconut_fiber"},
+        rarity = 1,
+      },
+    },
+  },
 })
 
 local _ = {
@@ -124,6 +136,35 @@ palm_tree_schematic = {
 		_, _, _, _, _,
 	}
 }
+
+minetest.register_craftitem("sailing:coconut_meat", {
+	description = "Coconut meat",
+	inventory_image = "coconut_meat.png",
+	on_use = minetest.item_eat(2),
+})
+
+minetest.register_craftitem("sailing:coconut_fiber", {
+	description = "Coconut fiber",
+	inventory_image = "coconut_fiber.png",
+})
+
+minetest.register_craft({
+	output = 'default:wood 4',
+	recipe = {
+		{'sailing:palm_trunk'},
+	}
+})
+
+minetest.register_craft({
+	output = 'wool:white',
+	type = 'shapeless',
+	recipe = {
+		"sailing:coconut_fiber",
+		"sailing:coconut_fiber",
+		"sailing:coconut_fiber",
+		"sailing:coconut_fiber"
+	}
+})
 
 -- minetest.register_craftitem() for coconut meat
 -- register craftitem for coconut fiber
