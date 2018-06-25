@@ -56,7 +56,8 @@ minetest.register_decoration({
   sidelen = 5,
   fill_ratio = 0.01,
   schematic = palm_tree_schematic,
-  flags = {place_center_x = true, place_center_z = true},
+  rotation = 'random',
+  flags = {place_center_z = true},
 })
 
 minetest.register_on_generated(function(minp, maxp, seed)

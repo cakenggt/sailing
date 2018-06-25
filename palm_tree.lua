@@ -11,24 +11,6 @@ minetest.register_node("sailing:palm_trunk", {
 	is_ground_content = false,
 	groups = {tree = 1, choppy = 2, oddly_breakable_by_hand = 1, flammable = 2},
 	sounds = default.node_sound_wood_defaults(),
-	on_rightclick = function(pos)
-		local node = minetest.get_node(pos)
-		while node.name == "sailing:palm_trunk" do
-			pos.y = pos.y + 1
-			node = minetest.get_node(pos)
-		end
-		if node.name == "sailing:coconut_spawn" then
-			minetest.get_node_timer(pos):start(30)
-		end
-		for i=1,4 do
-			local side = sides[i]
-			local newpos = {x = pos.x + side.x, y = pos.y, z = pos.z + side.z}
-			if minetest.get_node(newpos).name == "sailing:coconut_block" then
-				minetest.spawn_falling_node(newpos)
-				return
-			end
-		end
-	end,
 })
 
 minetest.register_node("sailing:coconut_spawn", {
@@ -79,6 +61,33 @@ minetest.register_node("sailing:coconut_block", {
       },
     },
   },
+	on_rightclick = function(pos)
+		minetest.spawn_falling_node(pos)
+		local near_spawn = minetest.find_node_near(pos, 1, {"sailing:coconut_spawn"})
+		if near_spawn then
+			minetest.get_node_timer(near_spawn).start(30)
+		end
+	end,
+})
+
+minetest.register_node("sailing:palm_leaf", {
+	description = "Palm leaf",
+	drawtype = "allfaces_optional",
+	waving = 1,
+	tiles = {"default_leaves.png"},
+	special_tiles = {"default_leaves_simple.png"},
+	paramtype = "light",
+	is_ground_content = false,
+	groups = {snappy = 3, leafdecay = 3, flammable = 2, leaves = 1},
+	drop = 'sailing:palm_leaf',
+	sounds = default.node_sound_leaves_defaults(),
+	after_place_node = default.after_place_leaves,
+})
+
+default.register_leafdecay({
+	trunks = {"sailing:coconut_spawn", "sailing:palm_trunk"},
+	leaves = {"sailing:palm_leaf"},
+	radius = 3,
 })
 
 local _ = {
@@ -101,39 +110,58 @@ local C = {
 	prob = 100,
 }
 
+local L = {
+	name = "sailing:palm_leaf",
+}
+
 -- make schematic
 palm_tree_schematic = {
-	size = {x = 5, y = 5, z = 5},
+	size = {x = 5, y = 8, z = 5},
 	data = {
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
+		_, _, _, _, _,
+		_, _, L, _, _,
+		_, _, L, _, _,
 
+		_, _, _, _, _,
+		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, C, _, _,
+		_, _, L, _, _,
 
-		_, _, T, _, _,
-		_, _, T, _, _,
-		_, _, T, _, _,
-		_, _, T, _, _,
-		_, C, S, C, _,
+		T, _, _, _, _,
+		T, _, _, _, _,
+		T, _, _, _, _,
+		T, T, _, _, _,
+		_, T, _, _, _,
+		_, T, T, _, _,
+		L, C, S, C, L,
+		L, L, L, L, L,
 
+		_, _, _, _, _,
+		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, C, _, _,
+		_, _, L, _, _,
 
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
 		_, _, _, _, _,
+		_, _, _, _, _,
+		_, _, L, _, _,
+		_, _, L, _, _,
 	}
 }
 
@@ -165,9 +193,3 @@ minetest.register_craft({
 		"sailing:coconut_fiber"
 	}
 })
-
--- minetest.register_craftitem() for coconut meat
--- register craftitem for coconut fiber
--- recipe for fiber -> wool
--- meat is food
--- coconut tree sapling recipe
