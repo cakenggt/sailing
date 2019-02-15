@@ -35,6 +35,9 @@ local np_atoll = {
   lacunarity = 2.0,
 }
 
+wind.np_atoll = np_atoll
+wind.ATOLL_START = ATOLL_START
+
 -- between 0 and 1
 local np_island = {
   offset = 0.5,
@@ -57,7 +60,7 @@ minetest.register_decoration({
   fill_ratio = 0.01,
   schematic = palm_tree_schematic,
   rotation = 'random',
-  flags = {place_center_z = true},
+  flags = {place_center_x = true},
 })
 
 minetest.register_on_generated(function(minp, maxp, seed)
@@ -80,7 +83,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
   local c_stone = minetest.get_content_id("default:stone")
 
   local sidelen = x1 - x0 + 1
-  local chulens2d = {x=sidelen, y=sidelen, z=1}
+  local chulens2d = {x=sidelen, y=sidelen}
   local minpos2d = {x=x0, y=z0}
 
   np_atoll_map = np_atoll_map or minetest.get_perlin_map(np_atoll, chulens2d)

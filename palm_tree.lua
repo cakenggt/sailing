@@ -11,6 +11,7 @@ minetest.register_node("sailing:palm_trunk", {
 	is_ground_content = false,
 	groups = {tree = 1, choppy = 2, oddly_breakable_by_hand = 1, flammable = 2},
 	sounds = default.node_sound_wood_defaults(),
+	climbable = true,
 })
 
 minetest.register_node("sailing:coconut_spawn", {
@@ -65,9 +66,18 @@ minetest.register_node("sailing:coconut_block", {
 		minetest.spawn_falling_node(pos)
 		local near_spawn = minetest.find_node_near(pos, 1, {"sailing:coconut_spawn"})
 		if near_spawn then
-			minetest.get_node_timer(near_spawn).start(30)
+			minetest.get_node_timer(near_spawn):start(30)
 		end
 	end,
+	on_construct = function(pos)
+		minetest.get_node_timer(pos):start(30)
+	end,
+	on_timer = function(pos)
+		if default.can_grow(pos) then
+			minetest.set_node(pos, {name="default:air"})
+			minetest.place_schematic(pos, palm_tree_schematic, "random", {}, false, {place_center_x = true})
+		end
+	end
 })
 
 minetest.register_node("sailing:palm_leaf", {

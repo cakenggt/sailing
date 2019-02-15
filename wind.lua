@@ -23,10 +23,8 @@ local function modify_wind()
     next_wind = generate_next_wind()
     wind_counter = 0
   end
-  wind = {
-    yaw = wind.yaw + ((next_wind.yaw - wind.yaw) / wind_change_factor),
-    mag = wind.mag + ((next_wind.mag - wind.mag) / wind_change_factor)
-  }
+  wind.yaw = wind.yaw + ((next_wind.yaw - wind.yaw) / wind_change_factor)
+  wind.mag = wind.mag + ((next_wind.mag - wind.mag) / wind_change_factor)
   --minetest.log('error', "wind "..minetest.write_json(wind))
   --minetest.log('error', "next wind "..minetest.write_json(next_wind))
   wind_counter = wind_counter + 1
