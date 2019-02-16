@@ -9,22 +9,23 @@ local function generate_next_wind()
   }
 end
 
-wind = generate_next_wind()
+wind.current_wind = generate_next_wind()
 
 local wind_interval = 60 * 20
 local wind_counter = 0
 local wind_change_factor = 4
-local prev_wind = wind
-local next_wind = generate_next_wind()
+wind.next_wind = generate_next_wind()
 
 local function modify_wind()
   if wind_counter > wind_interval then
-    prev_wind = next_wind
-    next_wind = generate_next_wind()
+    wind.current_wind = wind.next_wind
+    wind.next_wind = generate_next_wind()
     wind_counter = 0
   end
-  wind.yaw = wind.yaw + ((next_wind.yaw - wind.yaw) / wind_change_factor)
-  wind.mag = wind.mag + ((next_wind.mag - wind.mag) / wind_change_factor)
+  wind.current_wind = {
+    yaw = wind.current_wind.yaw + ((wind.next_wind.yaw - wind.current_wind.yaw) / wind_change_factor),
+    mag = wind.current_wind.mag + ((wind.next_wind.mag - wind.current_wind.mag) / wind_change_factor)
+  }
   --minetest.log('error', "wind "..minetest.write_json(wind))
   --minetest.log('error', "next wind "..minetest.write_json(next_wind))
   wind_counter = wind_counter + 1

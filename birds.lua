@@ -5,6 +5,18 @@ local function is_atoll(pos)
   return atoll_noise:get2d(new_pos) > wind.ATOLL_START
 end
 
+-- Reimplement vector.direction because it is weird for some reason.
+function direction(a, b)
+    return vector.normalize(vector.subtract(b, a))
+end
+
+local GRID_LAYERS = 1
+local TOTAL_GRID_POINTS = (((GRID_LAYERS * 2) + 1) ^ 2) - 1
+local BIRD_PERSISTENCE_TIME = 30
+local BIRD_PERIOD = 1
+local DESIRED_BIRDS_ON_SCREEN = 10
+local BIRD_CHANCE = DESIRED_BIRDS_ON_SCREEN / ((BIRD_PERSISTENCE_TIME / BIRD_PERIOD) * TOTAL_GRID_POINTS)
+
 local function get_grid(center, layers, spacing)
   local middle = layers + 1
   local result = {}
@@ -24,17 +36,15 @@ end
 
 local function get_vectors_to_atolls(from)
   local result = {}
-  for i, point in ipairs(get_grid(from, 1, 1000)) do
+  for i, point in ipairs(get_grid(from, GRID_LAYERS, 1000)) do
     --minetest.log('error', "for point "..minetest.write_json(point))
     if is_atoll(point) then
-      result[#result + 1] = vector.direction(from, point)
+      result[#result + 1] = direction(from, point)
       --minetest.log('error', "atoll at "..minetest.write_json(point))
     end
   end
   return result
 end
-
-local BIRD_CHANCE = 0.1
 
 local function show_birds()
   for i, obj in ipairs(minetest.get_connected_players()) do
@@ -49,15 +59,14 @@ local function show_birds()
         minetest.add_particle({
               pos = {x = new_x, y = pos.y + 20, z = new_z},
               velocity = vec,
-              expirationtime = 30,
+              expirationtime = BIRD_PERSISTENCE_TIME,
               size = 4,
-              texture = "bird.png",
-              playername = player_name
+              texture = "bird.png"
           })
       end
     end
   end
-  minetest.after(1, show_birds)
+  minetest.after(BIRD_PERIOD, show_birds)
 end
 
 -- Must run after world initializes

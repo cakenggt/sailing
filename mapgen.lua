@@ -2,17 +2,32 @@
 
 local Y_WATER = 1
 
-local ATOLL_WIDTH = 0.1
+local ATOLL_WIDTH = 0.2
 local ATOLL_START = 0.65
 
 local LAND_MAX = 100
 local BIG_ISLAND = 100
 
+function in_atoll_circle(num)
+  return num > ATOLL_START
+end
+
+-- Number from 0 to 1 which increases linearly as one goes from ATOLL_START or
+-- ATOLL_START + ATOLL_WIDTH towards ATOLL_START + (ATOLL_WIDTH/2)
 function get_atoll_factor(num)
   if num < ATOLL_START or num > ATOLL_START + ATOLL_WIDTH then
     return 0
   end
   return 1 - math.abs((num - (ATOLL_START + (ATOLL_WIDTH / 2))) / (ATOLL_WIDTH / 2))
+end
+
+-- Number from 0 to 1 which increases parabolically as one goes from ATOLL_START or
+-- ATOLL_START + ATOLL_WIDTH towards ATOLL_START + (ATOLL_WIDTH/2)
+function get_atoll_factor(num)
+  if num < ATOLL_START or num > ATOLL_START + ATOLL_WIDTH then
+    return 0
+  end
+  return 1 - math.abs((num - (ATOLL_START + (ATOLL_WIDTH / 2))) / (ATOLL_WIDTH / 2))^2
 end
 
 minetest.register_on_mapgen_init(function(mgparams)
@@ -60,7 +75,7 @@ minetest.register_decoration({
   fill_ratio = 0.01,
   schematic = palm_tree_schematic,
   rotation = 'random',
-  flags = {place_center_x = true},
+  flags = {place_center_z = true, place_center_x = true},
 })
 
 minetest.register_on_generated(function(minp, maxp, seed)
@@ -81,6 +96,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
   local c_dirt = minetest.get_content_id("default:dirt")
   local c_sand = minetest.get_content_id("default:sand")
   local c_stone = minetest.get_content_id("default:stone")
+  local c_shallow_water = minetest.get_content_id("sailing:shallow_water_source")
 
   local sidelen = x1 - x0 + 1
   local chulens2d = {x=sidelen, y=sidelen}
@@ -98,6 +114,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
       local n_atoll = nvals_atoll[n_index]
       local n_island = nvals_island[n_index]
       local atoll_factor = get_atoll_factor(n_atoll)
+      local in_atoll = in_atoll_circle(n_atoll)
       local solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))
       -- central island
       if x < BIG_ISLAND and x > -BIG_ISLAND and z < BIG_ISLAND and z > -BIG_ISLAND then
@@ -136,8 +153,12 @@ minetest.register_on_generated(function(minp, maxp, seed)
             end
           end
         elseif y < Y_WATER then
-          --water
-          block_type = c_water
+          if in_atoll then
+            block_type = c_shallow_water
+          else
+            --water
+            block_type = c_water
+          end
         end
         if block_type then
           local vi = area:index(x, y, z)
