@@ -3,25 +3,22 @@ minetest.register_privilege("wind", {
 })
 
 minetest.register_chatcommand("wind", {
-  params = "[<speed> [<direction>]]",
-  description = "Sets the wind speed and direction",
+  params = "[<speed>]",
+  description = "Sets the wind speed and direction to player's direction",
   privs = {wind = true},
   func = function(name, param)
     local player = minetest.get_player_by_name(name)
     if not player then
       return
     end
-    local speed, direction = string.match(param, "(%d+) ([^ ]+)?")
+    minetest.chat_send_player(name, param)
+    local speed = string.match(param, "(%d+)")
     if speed then
       speed = tonumber(speed)
     else
       speed = 15
     end
-    if direction then
-      direction = tonumber(direction)
-    else
-      direction = player:get_look_horizontal()
-    end
+    local direction = player:get_look_horizontal()
     local new_wind = {
       mag = speed,
       yaw = direction,
