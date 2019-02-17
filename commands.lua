@@ -11,7 +11,6 @@ minetest.register_chatcommand("wind", {
     if not player then
       return
     end
-    minetest.chat_send_player(name, param)
     local speed = string.match(param, "(%d+)")
     if speed then
       speed = tonumber(speed)

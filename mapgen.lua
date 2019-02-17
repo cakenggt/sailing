@@ -14,7 +14,7 @@ end
 
 -- Number from 0 to 1 which increases linearly as one goes from ATOLL_START or
 -- ATOLL_START + ATOLL_WIDTH towards ATOLL_START + (ATOLL_WIDTH/2)
-function get_atoll_factor(num)
+function get_atoll_factor_linear(num)
   if num < ATOLL_START or num > ATOLL_START + ATOLL_WIDTH then
     return 0
   end
@@ -23,7 +23,7 @@ end
 
 -- Number from 0 to 1 which increases parabolically as one goes from ATOLL_START or
 -- ATOLL_START + ATOLL_WIDTH towards ATOLL_START + (ATOLL_WIDTH/2)
-function get_atoll_factor(num)
+function get_atoll_factor_parabolic(num)
   if num < ATOLL_START or num > ATOLL_START + ATOLL_WIDTH then
     return 0
   end
@@ -122,7 +122,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
     for x = x0, x1 do
       local n_atoll = nvals_atoll[n_index]
       local n_island = nvals_island[n_index]
-      local atoll_factor = get_atoll_factor(n_atoll)
+      local atoll_factor = get_atoll_factor_parabolic(n_atoll)
       local in_atoll = in_atoll_circle(n_atoll)
       local solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))
       -- central island
