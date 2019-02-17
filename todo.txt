@@ -1,6 +1,1 @@
 * fishing
-* paper mulberry tree for kapa (tall thin tree)
-* make kapa cloth from tree fibers and make that the sail
-* kapa cloth should be able to be put on the ground too and hung up
-* kukui nut torches with animated fire and animated smoke
-* kukui nut trees (look like big shrubs)
