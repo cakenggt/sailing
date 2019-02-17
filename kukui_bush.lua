@@ -29,10 +29,14 @@ minetest.register_node("sailing:kukui_bush_empty", {
   on_timer = function(pos, elapsed)
     minetest.set_node(pos, {name = "sailing:kukui_bush_full"})
   end,
+  on_construct = function(pos)
+    minetest.get_node_timer(pos):start(math.random(30, 60))
+  end,
   drop = "sailing:kukui_bush_empty",
 })
 
 minetest.register_craftitem("sailing:kukui_nut", {
   description = "Kukui nut",
   inventory_image = "kukui_nut.png",
+  on_use = minetest.item_eat(1),
 })

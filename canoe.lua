@@ -55,7 +55,7 @@ local sail = {
   physical = false,
   visual = "mesh",
   mesh = "sailing_sail.obj",
-  textures = {"wool_white.png"}
+  textures = {"sail_cloth.png"}
 }
 
 
@@ -313,7 +313,7 @@ end
 minetest.register_craft({
   output = "sailing:canoe",
   recipe = {
-    {"group:wool", "group:wool", "group:wool"},
+    {"",           "sailing:sail", ""        },
     {"group:wood", "",           "group:wood"},
     {"group:wood", "group:wood", "group:wood"},
   },

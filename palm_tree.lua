@@ -11,7 +11,6 @@ minetest.register_node("sailing:palm_trunk", {
 	is_ground_content = false,
 	groups = {tree = 1, choppy = 2, oddly_breakable_by_hand = 1, flammable = 2},
 	sounds = default.node_sound_wood_defaults(),
-	climbable = true,
 })
 
 minetest.register_node("sailing:coconut_spawn", {
@@ -54,10 +53,6 @@ minetest.register_node("sailing:coconut_block", {
     items = {
       {
         items = {"sailing:coconut_meat"},
-        rarity = 1,
-      },
-			{
-        items = {"sailing:coconut_fiber"},
         rarity = 1,
       },
     },
@@ -186,9 +181,9 @@ minetest.register_craftitem("sailing:coconut_meat", {
 	on_use = minetest.item_eat(2),
 })
 
-minetest.register_craftitem("sailing:coconut_fiber", {
-	description = "Coconut fiber",
-	inventory_image = "coconut_fiber.png",
+minetest.register_craftitem("sailing:sail", {
+	description = "Sail",
+	inventory_image = "sailing_sail.png",
 })
 
 minetest.register_craft({
@@ -199,12 +194,41 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
-	output = 'wool:white',
+	output = 'sailing:sail',
 	type = 'shapeless',
 	recipe = {
-		"sailing:coconut_fiber",
-		"sailing:coconut_fiber",
-		"sailing:coconut_fiber",
-		"sailing:coconut_fiber"
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
+		"sailing:palm_leaf",
 	}
+})
+
+minetest.register_node("sailing:kapa_cloth", {
+	description = "Kapa cloth",
+	drawtype = "nodebox",
+	paramtype = "light",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5, -0.5, -0.5, 0.5, -0.4, 0.5},
+		}
+	},
+	sounds = default.node_sound_leaves_defaults(),
+	tiles = {"sailing_kapa_cloth.png"},
+	is_ground_content = false,
+	groups = {flammable = 2, dig_immediate = 2},
+})
+
+minetest.register_craft({
+  output = "sailing:kapa_cloth",
+  recipe = {
+    {"sailing:palm_leaf", "sailing:palm_leaf"},
+    {"sailing:palm_leaf", "sailing:palm_leaf"},
+  },
 })
