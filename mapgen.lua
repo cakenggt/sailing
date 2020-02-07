@@ -7,9 +7,18 @@ local ATOLL_START = 0.65
 
 local LAND_MAX = 100
 local BIG_ISLAND = 100
+local ISLAND_MAX = 200
 
 function in_atoll_circle(num)
   return num > ATOLL_START
+end
+
+function in_atoll(num)
+  return num > ATOLL_START and num < ATOLL_START + ATOLL_WIDTH
+end
+
+function in_island(num)
+  return num > ATOLL_START + ATOLL_WIDTH
 end
 
 -- Number from 0 to 1 which increases linearly as one goes from ATOLL_START or
@@ -28,6 +37,25 @@ function get_atoll_factor_parabolic(num)
     return 0
   end
   return 1 - math.abs((num - (ATOLL_START + (ATOLL_WIDTH / 2))) / (ATOLL_WIDTH / 2))^2
+end
+
+function get_island_factor_parabolic(num)
+  if not in_island(num) then
+    return 0
+  end
+  local start = ATOLL_START + ATOLL_WIDTH
+  return ((num - start) / (1 - start))^2
+end
+
+function get_island_factor_exponential(num)
+  if not in_island(num) then
+    return 0
+  end
+  local start = ATOLL_START + ATOLL_WIDTH
+  local width = 1-start
+  local normalized = (num - start)/width -- number between 0 and 1
+  local exp = 2
+  return exp^normalized - (exp-1)
 end
 
 minetest.register_on_mapgen_init(function(mgparams)
@@ -132,8 +160,14 @@ minetest.register_on_generated(function(minp, maxp, seed)
       local n_atoll = nvals_atoll[n_index]
       local n_island = nvals_island[n_index]
       local atoll_factor = get_atoll_factor_parabolic(n_atoll)
+      local island_factor = get_island_factor_exponential(n_atoll)
       local in_atoll = in_atoll_circle(n_atoll)
-      local solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))
+      local solid_level = 0
+      if (in_island(n_atoll)) then
+        solid_level = (n_island * LAND_MAX - LAND_MAX) + (island_factor * ISLAND_MAX)
+      else
+        solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))
+      end
       -- central island
       if x < BIG_ISLAND and x > -BIG_ISLAND and z < BIG_ISLAND and z > -BIG_ISLAND then
         solid_level = (n_island * LAND_MAX / 2) * (0.5 - math.abs((math.sqrt(x ^ 2 + z ^ 2) / BIG_ISLAND) - 0.5))
@@ -150,16 +184,16 @@ minetest.register_on_generated(function(minp, maxp, seed)
             elseif (y + 1) >= solid_level then
               -- very top solid block
               block_type = c_grass
-            elseif atoll_factor > 0 then
-              -- stone only spawns in atolls
+            elseif in_atoll then
+              -- stone only spawns in atoll circle
               block_type = c_stone
             else
               block_type = c_dirt
             end
           else
             -- is underwater
-            if atoll_factor > 0 then
-              -- stone only spawns in atolls
+            if in_atoll then
+              -- stone only spawns in atoll circle
               if (y + 1) >= solid_level then
                 -- very top solid block
                 block_type = c_sand
