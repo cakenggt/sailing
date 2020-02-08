@@ -6,6 +6,7 @@ local ATOLL_WIDTH = 0.2
 local ATOLL_START = 0.65
 
 local LAND_MAX = 100
+local ATOLL_MAX = 50
 local BIG_ISLAND = 100
 local ISLAND_MAX = 200
 
@@ -44,7 +45,9 @@ function get_island_factor_parabolic(num)
     return 0
   end
   local start = ATOLL_START + ATOLL_WIDTH
-  return ((num - start) / (1 - start))^2
+  local width = 1-start
+  local normalized = (num - start)/width -- number between 0 and 1
+  return normalized^4
 end
 
 function get_island_factor_exponential(num)
@@ -55,7 +58,7 @@ function get_island_factor_exponential(num)
   local width = 1-start
   local normalized = (num - start)/width -- number between 0 and 1
   local exp = 2
-  return exp^normalized - (exp-1)
+  return (exp^normalized - 1)/(exp-1)
 end
 
 minetest.register_on_mapgen_init(function(mgparams)
@@ -162,12 +165,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
       local atoll_factor = get_atoll_factor_parabolic(n_atoll)
       local island_factor = get_island_factor_exponential(n_atoll)
       local in_atoll = in_atoll_circle(n_atoll)
-      local solid_level = 0
-      if (in_island(n_atoll)) then
-        solid_level = (n_island * LAND_MAX - LAND_MAX) + (island_factor * ISLAND_MAX)
-      else
-        solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * (LAND_MAX / 2))
-      end
+      local solid_level = (n_island * LAND_MAX - LAND_MAX) + (atoll_factor * ATOLL_MAX) + (island_factor * ISLAND_MAX)
       -- central island
       if x < BIG_ISLAND and x > -BIG_ISLAND and z < BIG_ISLAND and z > -BIG_ISLAND then
         solid_level = (n_island * LAND_MAX / 2) * (0.5 - math.abs((math.sqrt(x ^ 2 + z ^ 2) / BIG_ISLAND) - 0.5))
