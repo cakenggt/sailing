@@ -56,13 +56,18 @@ local function show_birds()
       if math.random() < BIRD_CHANCE then
         local new_x = math.random(pos.x - 10, pos.x + 10)
         local new_z = math.random(pos.z - 10, pos.z + 10)
+        local position = {x = new_x, y = pos.y + 20, z = new_z}
         minetest.add_particle({
-              pos = {x = new_x, y = pos.y + 20, z = new_z},
+              pos = position,
               velocity = vec,
               expirationtime = BIRD_PERSISTENCE_TIME,
               size = 4,
               texture = "bird.png"
           })
+        minetest.sound_play("sailing_seagull", {pos = position,
+          gain = 1.0,  -- default is 1.0
+          max_hear_distance = 32,  -- default, uses an euclidean metric
+        }, true)
       end
     end
   end

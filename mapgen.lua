@@ -127,6 +127,17 @@ minetest.register_decoration({
   flags = {place_center_z = true, place_center_x = true},
 })
 
+for i=1, 4 do
+  minetest.register_decoration({
+    deco_type = "simple",
+    place_on = {"default:dirt_with_grass", "default:sand"},
+    sidelen = 5,
+    fill_ratio = 0.001,
+    decoration = "sailing:lava_rock_"..i,
+    flags = {place_center_z = true, place_center_x = true},
+  })
+end
+
 minetest.register_on_generated(function(minp, maxp, seed)
   local x1 = maxp.x
   local y1 = maxp.y
