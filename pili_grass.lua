@@ -13,6 +13,7 @@ minetest.register_node("sailing:pili_grass_growing", {
   paramtype = "light",
   sunlight_propagates = true,
   walkable = false,
+  floodable = true,
   buildable_to = true,
   -- flora makes it spread over time
   groups = {snappy = 3, flora = 1, attached_node = 1, grass = 1, flammable = 1},

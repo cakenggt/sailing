@@ -18,6 +18,7 @@ minetest.register_node("sailing:shallow_water_source", {
   is_ground_content = false,
   drop = "",
   drowning = 1,
+  waving = 3,
   liquidtype = "source",
   liquid_alternative_flowing = "sailing:shallow_water_flowing",
   liquid_alternative_source = "sailing:shallow_water_source",

@@ -152,13 +152,13 @@ function canoe.update_sail(self)
   if not sail then
     sail = minetest.add_entity(self.object:getpos(), "sailing:sail")
     self.sail = sail
+    minetest.sound_play("sailing_sail_open", {pos = self.sail:getpos(),
+      gain = 1.0,  -- default is 1.0
+      max_hear_distance = 32,  -- default, uses an euclidean metric
+    }, true)
   end
   sail:set_attach(self.object, "",
     sail_attach_pos, {x = 0, y = -math.deg(self.sail_yaw), z = 0})
-  minetest.sound_play("sailing_sail_open", {pos = self.object:getpos(),
-    gain = 1.0,  -- default is 1.0
-    max_hear_distance = 32,  -- default, uses an euclidean metric
-  }, true)
 end
 
 

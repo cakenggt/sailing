@@ -77,6 +77,7 @@ minetest.register_node("sailing:kukui_torch", {
   wield_image = "kukui_torch.png",
   paramtype = "light",
   sunlight_propagates = true,
+  floodable = true,
   is_ground_content = false,
   walkable = false,
   light_source = LIGHT_MAX-1,
