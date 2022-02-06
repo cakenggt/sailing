@@ -1,8 +1,8 @@
 local function is_atoll(pos)
   local atoll_noise = minetest.get_perlin(wind.np_atoll)
   local new_pos = {x = pos.x, y = pos.z}
-  --minetest.log('error', "noise at "..atoll_noise:get2d(new_pos))
-  return atoll_noise:get2d(new_pos) > wind.ATOLL_START
+  --minetest.log('error', "noise at "..atoll_noise:get_2d(new_pos))
+  return atoll_noise:get_2d(new_pos) > wind.ATOLL_START
 end
 
 -- Reimplement vector.direction because it is weird for some reason.
